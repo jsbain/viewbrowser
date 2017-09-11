@@ -65,7 +65,7 @@ class ObjCPropertyDataSource(ui.ListDataSource):
 		cell = ui.TableViewCell('subtitle')
 		cell.text_label.number_of_lines = self.number_of_lines
 		cell.text_label.text = item[0]
-		cell.detail_text_label.text=item[1])
+		cell.detail_text_label.text=item[1]
 		if self.text_color:
 			cell.text_label.text_color = self.text_color
 		if self.highlight_color:
