@@ -1,4 +1,5 @@
 # coding: utf-8
+# credit: github.com/mikaelho/pythonista-gestures
 import ui
 from objc_util import *
 import uuid

@@ -29,26 +29,32 @@ def getProps(obj):
       nameptr=property_getName(pA[i])
       attribs=c.property_getAttributes(pA[i])
       name=(c.sel_getName(nameptr)).decode('ascii')
-      sel_name=re.search(b',G([^,"]*)',attribs)
+      sel_name=re.search(b',G([^,"]*)',attribs) #workaround for ObjCInstanceMethod bug
       if sel_name:
         sel_name=sel_name.group(1).decode('ascii')
         if obj.respondsToSelector_(sel(sel_name)):
+           #in some cases, this process returns an invalid selector, for reasons i dont understand. m
+           #only override name if it is a valid selector
            name=sel_name
       m=ObjCInstanceMethod(obj, name)
-      if not m.sel_name==name:
-         print(name,sel_name,m.sel_name,pA[i])
-      #fix encoding: blocks cast as pure pointers
+      #fix encoding: ObjCInstanceMethod has the following bugs:
+      #  block types are ObjCBlock, but should be regular pointer (exclude ? from type)
+      #  ObjC objects returns are given as T@"someobjectclass", so we exclude quote
       m.encoding=re.match(b'^T([^,"\?]*)',attribs).group(1)+b'0@0:0'
       value='???'
-      rc=None
       try:     
+         #sometimes ObjCInstanceMethod still returns a bad selector
          if obj.respondsToSelector(m.sel_name):
+            value_obj=m()
+            value=structure_repr(value_obj)
+         elif obj.respondsToSelector(name):
+            m.sel_name=name
             value_obj=m()
             value=structure_repr(value_obj)
       except:
          pass
-      names.append((name,str(value),rc))
-   return names
+      names.append((name,str(value)))
+   return names	#list of tuples of (name, string repr of struct)
 import ui
 class ObjCPropertyDataSource(ui.ListDataSource):
 	def __init__(self,obj):
@@ -59,7 +65,7 @@ class ObjCPropertyDataSource(ui.ListDataSource):
 		cell = ui.TableViewCell('subtitle')
 		cell.text_label.number_of_lines = self.number_of_lines
 		cell.text_label.text = item[0]
-		cell.detail_text_label.text=item[1]+'retaincount:'+str(item[2])
+		cell.detail_text_label.text=item[1])
 		if self.text_color:
 			cell.text_label.text_color = self.text_color
 		if self.highlight_color:

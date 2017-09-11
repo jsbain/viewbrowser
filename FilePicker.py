@@ -1,4 +1,5 @@
 # coding: utf-8
+# credit: https://gist.github.com/omz/e3433ebba20c92b63111
 import ui
 import os
 from objc_util import ObjCInstance, ObjCClass
